@@ -1,0 +1,430 @@
+<?php
+/**
+ * Theme functions and definitions.
+ *
+ * For additional information on potential customization options,
+ * read the developers' documentation:
+ *
+ * https://developers.elementor.com/docs/hello-elementor-theme/
+ *
+ * @package HelloElementorChild
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
+define( 'HELLO_ELEMENTOR_CHILD_VERSION', '2.0.0' );
+
+/**
+ * Load child theme scripts & styles.
+ *
+ * @return void
+ */
+function hello_elementor_child_scripts_styles() {
+
+	wp_enqueue_style(
+		'hello-elementor-child-style',
+		get_stylesheet_directory_uri() . '/style.css',
+		[
+			'hello-elementor-theme-style',
+		],
+		HELLO_ELEMENTOR_CHILD_VERSION
+	);
+
+}
+add_action( 'wp_enqueue_scripts', 'hello_elementor_child_scripts_styles', 20 );
+
+
+
+
+
+
+// Services custom post type function
+function create_posttype() {
+  
+    register_post_type( 'services',
+        array(
+            'labels' => array(
+                'name' => __( 'Services' ),
+                'singular_name' => __( 'Services' )
+            ),
+            'public' => true,
+            'has_archive' => true,
+            'rewrite' => array('slug' => 'services'),
+            'show_in_rest' => true,
+			'supports'            => array( 'title', 'editor', 'excerpt', 'author', 'thumbnail', 'comments', 'revisions', 'custom-fields', ),
+  
+        )
+    );
+}
+add_action( 'init', 'create_posttype' );
+
+
+
+// Services custom post 
+function services_posr_slider() {
+	ob_start();
+	$the_query = new WP_Query(array(
+     'post_type' => 'services', 
+     'posts_per_page' => 10 
+    )); 
+	?>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+       <div class="swiper mySwiper service-slider">
+    <div class="swiper-wrapper">
+		<?php while ( $the_query->have_posts() ) :  $the_query->the_post(); ?>
+		  <div class="swiper-slide">
+			   <div class="sservice-slider">
+				   <div class="service-post-thumbnail">
+					   <a href="<?php the_permalink(); ?>"><?php echo get_the_post_thumbnail(); ?></a>
+				   </div>
+				   <div class="service-post-content">
+					  <h3 class="service-post-title">
+						  <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+					   </h3>  
+					   <?php the_excerpt();?>
+					   <a href="<?php the_permalink(); ?>" class="service-post-btn">
+						   <img src="https://carplim.se/wp-content/uploads/2025/01/Vector.svg">
+					   </a>
+				   </div>
+			   </div>
+		  </div>
+		<?php 
+		endwhile; 
+		wp_reset_postdata();
+	    wp_reset_query();
+		?>
+    </div>
+    
+  </div>
+<div class="swiper-pagination services-pagination"></div>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+  <!-- Initialize Swiper -->
+  <script>
+   var swiper = new Swiper(".service-slider", {
+    loop: true,
+    autoplay: {
+        delay: 3000, // Adjust the delay as needed
+        disableOnInteraction: false,
+    },
+//     slidesPerView: 4,
+    spaceBetween: 16,
+    pagination: {
+        el: ".swiper-pagination",
+        clickable: true,
+    },
+	   breakpoints: {
+        1300: {
+			   slidesPerView: 4,
+              },
+        768: {
+            slidesPerView: 3,
+        },
+        767: {
+            slidesPerView: 2,
+        },
+
+        425: {
+            slidesPerView: 1,
+        },
+    },
+});
+
+  </script>
+    <?php
+	return ob_get_clean();
+}
+add_shortcode('services_posr_slider', 'services_posr_slider');
+
+
+
+
+
+// Testimonial post type
+function testimonial_posttype() {
+    register_post_type( 'testimonial',
+        array(
+            'labels' => array(
+                'name' => __( 'Testimonial' ),
+                'singular_name' => __( 'Testimonial' )
+            ),
+            'public' => true,
+            'has_archive' => true,
+            'rewrite' => array('slug' => 'testimonial'),
+            'show_in_rest' => true,
+            'supports' => array( 
+                'title', 
+                'editor', 
+                'excerpt', 
+                'author', 
+                'thumbnail', 
+                'comments', 
+                'revisions', 
+                'custom-fields', 
+            ),
+        )
+    );
+}
+add_action( 'init', 'testimonial_posttype' );
+
+function add_testimonial_meta_box() {
+    add_meta_box(
+        'testimonial_meta_box', // Meta box ID
+        'Testimonial Source', // Meta box title
+        'display_testimonial_meta_box', // Callback function
+        'testimonial', // Post type
+        'normal', // Context (normal, side, advanced)
+        'high' // Priority
+    );
+}
+add_action( 'add_meta_boxes', 'add_testimonial_meta_box' );
+
+// Display the custom meta box
+function display_testimonial_meta_box( $post ) {
+    // Retrieve current meta value
+    $testimonial_source = get_post_meta( $post->ID, 'testimonial_source', true );
+    ?>
+    <label for="testimonial_source">Owner Ship</label>
+    <input 
+        type="text" 
+        name="testimonial_source" 
+        id="testimonial_source" 
+        value="<?php echo esc_attr( $testimonial_source ); ?>" 
+        style="width: 100%;"
+    />
+    <?php
+}
+
+// Save the custom meta field value
+function save_testimonial_meta( $post_id ) {
+    // Check if the field is set and sanitize the value
+    if ( isset( $_POST['testimonial_source'] ) ) {
+        update_post_meta( $post_id, 'testimonial_source', sanitize_text_field( $_POST['testimonial_source'] ) );
+    }
+}
+add_action( 'save_post_testimonial', 'save_testimonial_meta' );
+
+
+
+// Services custom post 
+function testimonial_post_slider() {
+	ob_start();
+	$the_query = new WP_Query(array(
+     'post_type' => 'testimonial', 
+     'posts_per_page' => 4
+    )); 
+	?>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" integrity="sha512-tS3S5qG0BlhnQROyJXvNjeEM4UpMXHrQfTGmbQ1gKmelCxlSEBUaxhRBj/EFTzpbP4RVSrpEikbmdJobCvhE3g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <div class="owl-carousel owl-theme">
+		<?php while ( $the_query->have_posts() ) :  $the_query->the_post(); ?>
+		  <div class="item">
+			   <div class="testimonial-card">
+				   <?php the_excerpt();?>
+				  <div class="testimonial-body">
+					  <div class="testimonial-thumbnail">
+						    <?php echo get_the_post_thumbnail(); ?>  
+					  </div>
+					   <div class="testimonial-title-box">
+						   <h3 class="testimonial-title">
+							   <?php the_title(); ?>
+						   </h3>
+						   <?php 
+						      $testimonial_source = get_post_meta( get_the_ID(), 'testimonial_source', true );
+								if ( $testimonial_source ) {
+									echo '<p class="owner-title"> ' . esc_html( $testimonial_source ) . '</p>';
+								}
+						   ?>
+					   </div>
+				  </div>  
+			   </div>
+		  </div>
+		<?php 
+		endwhile; 
+		wp_reset_postdata();
+	    wp_reset_query();
+		?>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js" integrity="sha512-bPs7Ae6pVvhOSiIcyUClR7/q2OAsRiovw4vAkX+zJbw3ShAeeqezq50RIIcIURq7Oa20rW2n2q+fyXBNcU9lrw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <!-- Initialize Swiper -->
+  <script>
+  jQuery('.owl-carousel').owlCarousel({
+    loop:true,
+    margin:10,
+    nav:true,
+	autoplay: true,
+    responsive:{
+        0:{
+            items:1
+        },
+        600:{
+            items:1
+        },
+        1000:{
+            items:1
+        }
+    }
+});
+  </script>
+    <?php
+	return ob_get_clean();
+}
+add_shortcode('testimonial_post_slider', 'testimonial_post_slider');
+
+
+
+
+
+
+
+
+// Register Real Shops the custom post type
+function real_shops_posttype() {
+    register_post_type( 'shops',
+        array(
+            'labels' => array(
+                'name' => __( 'Real Shops' ),
+                'singular_name' => __( 'Real Shop' )
+            ),
+            'public' => true,
+            'has_archive' => true,
+            'rewrite' => array('slug' => 'shops'),
+            'show_in_rest' => true,
+            'supports' => array( 
+                'title', 
+                'editor', 
+                'excerpt', 
+                'author', 
+                'thumbnail', 
+                'comments', 
+                'revisions', 
+                'custom-fields', 
+            ),
+        )
+    );
+}
+add_action( 'init', 'real_shops_posttype' );
+
+// Register Real Shops the taxonomy
+function shop_categories_taxonomy() {
+    register_taxonomy(
+        'shop_categories',
+        'shops',
+        array(
+            'labels' => array(
+                'name' => __( 'Shop Categories' ),
+                'singular_name' => __( 'Shop Category' ),
+            ),
+            'hierarchical' => true,
+            'show_in_rest' => true,
+            'rewrite' => array( 'slug' => 'shop-categories' ),
+        )
+    );
+}
+add_action( 'init', 'shop_categories_taxonomy' );
+
+
+
+function add_shop_meta_boxes() {
+    add_meta_box(
+        'shop_meta_fields',
+        __( 'Shop Details', 'textdomain' ),
+        'shop_meta_fields_callback',
+        'shops',
+        'side',
+        'default'
+    );
+}
+add_action( 'add_meta_boxes', 'add_shop_meta_boxes' );
+
+
+function shop_meta_fields_callback( $post ) {
+    
+    $video_url = get_post_meta( $post->ID, '_shop_video_url', true );
+    $owner_name = get_post_meta( $post->ID, '_shop_owner_name', true );
+    $owner_designation = get_post_meta( $post->ID, '_shop_owner_designation', true );
+
+   
+    echo '<p><label for="shop_video_url">' . __( 'Video URL', 'textdomain' ) . '</label></p>';
+    echo '<input type="url" id="shop_video_url" name="shop_video_url" value="' . esc_attr( $video_url ) . '" size="25" />';
+
+    echo '<p><label for="shop_owner_name">' . __( 'Owner Name', 'textdomain' ) . '</label></p>';
+    echo '<input type="text" id="shop_owner_name" name="shop_owner_name" value="' . esc_attr( $owner_name ) . '" size="25" />';
+
+    echo '<p><label for="shop_owner_designation">' . __( 'Owner Designation', 'textdomain' ) . '</label></p>';
+    echo '<input type="text" id="shop_owner_designation" name="shop_owner_designation" value="' . esc_attr( $owner_designation ) . '" size="25" />';
+}
+
+
+function save_shop_meta( $post_id ) {
+    
+    if ( isset( $_POST['shop_video_url'] ) ) {
+        update_post_meta( $post_id, '_shop_video_url', sanitize_text_field( $_POST['shop_video_url'] ) );
+    }
+
+   
+    if ( isset( $_POST['shop_owner_name'] ) ) {
+        update_post_meta( $post_id, '_shop_owner_name', sanitize_text_field( $_POST['shop_owner_name'] ) );
+    }
+
+   
+    if ( isset( $_POST['shop_owner_designation'] ) ) {
+        update_post_meta( $post_id, '_shop_owner_designation', sanitize_text_field( $_POST['shop_owner_designation'] ) );
+    }
+}
+add_action( 'save_post', 'save_shop_meta' );
+
+
+
+function real_shop() {
+	 ob_start();
+	$the_query = new WP_Query(array(
+     'post_type' => 'shops', 
+     'posts_per_page' => 4
+    )); 
+	?>
+       <div class="real-shop-section">
+		  <?php while ( $the_query->have_posts() ) :  $the_query->the_post(); ?>
+		  <div class="shop-article">
+			 <div class="post-thumbnail">
+				 <a href="<?php the_permalink(); ?>"><?php echo get_the_post_thumbnail(); ?></a>
+			 </div> 
+			  <div class="real-shop-body">
+				  <h3 class="real-shop-title">
+					  <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a>
+				  </h3>
+				  <?php the_excerpt(); ?>
+				  <h4 class="owner-name">
+					  
+				  </h4>
+				  <?php
+					$owner_name = get_post_meta( get_the_ID(), '_shop_owner_name', true );
+					$owner_designation = get_post_meta( get_the_ID(), '_shop_owner_designation', true );
+
+					if ( ! empty( $owner_name ) ) {
+						echo '<h4 class="owner-name"> ' . esc_html( $owner_name ) . '</h4>';
+					}
+
+					if ( ! empty( $owner_designation ) ) {
+						echo '<p class="owner-designation">' . esc_html( $owner_designation ) . '</p>';
+					}
+					?>
+				  <a href="<?php the_permalink(); ?>" class="real-post-btn">
+					  <span>Watch Video</span>
+					  <img src="https://carplim.se/wp-content/uploads/2025/01/Group-1000003682.svg">
+				  </a>
+			  </div>
+		  </div> 
+		  <?php 
+		endwhile; 
+		wp_reset_postdata();
+	    wp_reset_query();
+		?> 
+       </div>
+    <?php
+	return ob_get_clean();
+}
+add_shortcode('real_shop', 'real_shop');
+
