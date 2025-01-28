@@ -1,3 +1,202 @@
+
+
+
+//this is second file of updated code with sidebar and updated via category in property list 
+
+<?php get_header(); ?>
+
+<div class="property-taxonomy-main-container">
+    <aside class="property-sidebar">
+        
+        <h3>Property Categories</h3>
+        <ul class="property-category-list">
+            <?php
+            // Fetch all top-level categories (parent categories)
+            $parent_terms = get_terms(array(
+                'taxonomy' => 'properties_category',
+                'hide_empty' => false,
+                'parent' => 0, // Top-level categories only
+            ));
+
+            if (!empty($parent_terms)) {
+                foreach ($parent_terms as $parent_term) {
+                    $parent_link = get_term_link($parent_term);
+                    
+                    
+                    echo '<li>';
+                        echo '<a href="' . esc_url($parent_link) . '">' . esc_html($parent_term->name) . '</a>';
+
+                        
+                        // Fetch child categories of the current parent
+                        $child_terms = get_terms(array(
+                            'taxonomy' => 'properties_category',
+                            'hide_empty' => false,
+                            'parent' => $parent_term->term_id,   
+                        ));
+
+                        if (!empty($child_terms)) {
+                            echo '<ul>';
+                            foreach ($child_terms as $child_term) {
+                                $child_link = get_term_link($child_term);
+                             
+                                echo '<li>';
+                                echo '<a href="' . esc_url($child_link) . '">' . esc_html($child_term->name) .'</a>';
+                                echo '</li>';
+                            }
+                            echo '</ul>';
+                        }
+
+                    echo '</li>';
+                }
+            } else {
+                echo '<li>No categories available.</li>';
+            }
+            ?>
+        </ul>
+    </aside>
+
+
+
+
+    
+
+
+    <!-- property-taxonomy-code start    -->
+    <div class="property-taxonomy">
+        <?php
+        $current_term = get_queried_object();
+
+        // Check if the current term has child categories
+        $child_terms = get_terms(array(
+            'taxonomy' => 'properties_category',
+            'parent' => $current_term->term_id,
+            'hide_empty' => false,
+        ));
+
+        if (!empty($child_terms)) {
+            echo '<ul class="subcategories-list">';
+            foreach ($child_terms as $child) {
+                // echo '<li><a href="' . esc_url(get_term_link($child)) . '">' . esc_html($child->name) . '</a></li>';
+            }
+            
+
+
+            // this code for showing post with category
+            if (have_posts()) {
+                echo '<div class="property-items">';
+                while (have_posts()) {
+                     the_post(); 
+                ?>
+                    <div class="property-item">
+                        <a href="<?php the_permalink(); ?>">
+                            <?php the_post_thumbnail('medium'); ?>
+                            <h2><?php the_title(); ?></h2>
+                        </a>
+                        <a href="<?php the_permalink(); ?>">
+                            <h6 class="view-detail-btn">View Details</h6>
+                        </a>
+                    </div>
+                <?php 
+                }
+                echo '</div>';  
+            }
+            else {
+                echo '<p>No properties found in this category.</p>';
+            }
+            // here code ending of showing post with category
+
+            
+            
+
+
+        echo '</ul>';
+
+        } else {
+                // Display posts in the current category if there are no child categories
+                if (have_posts()) {
+                        echo '<div class="property-items">';
+                        while (have_posts()) {
+                             the_post(); 
+                        ?>
+                            <div class="property-item">
+                                <a href="<?php the_permalink(); ?>">
+                                    <?php the_post_thumbnail('medium'); ?>
+                                    <h2><?php the_title(); ?></h2>
+                                </a>
+                                <a href="<?php the_permalink(); ?>">
+                                    <h6 class="view-detail-btn">View Details</h6>
+                                </a>
+                            </div>
+                        <?php 
+                        }
+                    echo '</div>';  
+                }
+                else {
+                    echo '<p>No properties found in this category.</p>';
+                }
+                
+        }
+        ?>
+    </div>
+</div>
+
+<?php get_footer(); ?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// this is first file old code 
+
+
+
+
+
+
+
+
+
+
+
+
 <?php get_header(); ?>
 <div class="property-taxonomy-main-container">
 
