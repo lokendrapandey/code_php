@@ -1,0 +1,88 @@
+<?php
+/**
+ * Theme functions and definitions.
+ *
+ * For additional information on potential customization options,
+ * read the developers' documentation:
+ *
+ * https://developers.elementor.com/docs/hello-elementor-theme/
+ *
+ * @package HelloElementorChild
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
+define( 'HELLO_ELEMENTOR_CHILD_VERSION', rand() );
+
+/**
+ * Load child theme scripts & styles.
+ *
+ * @return void
+ */
+function hello_elementor_child_scripts_styles() {
+
+	wp_enqueue_style(
+		'hello-elementor-child-style',
+		get_stylesheet_directory_uri() . '/style.css',
+		[
+			'hello-elementor-theme-style',
+		],
+		HELLO_ELEMENTOR_CHILD_VERSION
+	);
+
+}
+add_action( 'wp_enqueue_scripts', 'hello_elementor_child_scripts_styles', 20 );
+
+
+function custom_post_grid_shortcode($atts) {
+    ob_start();
+    
+    // Default attributes
+    $atts = shortcode_atts(array(
+        'posts_per_page' => 3,  // Number of posts to display
+        'category' => '',       // Optional category slug
+    ), $atts);
+
+    // WP_Query arguments
+    $args = array(
+        'post_type'      => 'post',
+        'posts_per_page' => $atts['posts_per_page'],
+        'category_name'  => $atts['category'],
+    );
+
+    $query = new WP_Query($args);
+
+    if ($query->have_posts()) {
+        echo '<div class="custom-post-grid">';
+        while ($query->have_posts()) {
+            $query->the_post();
+            ?>
+            <div class="post-card">
+                <a href="<?php the_permalink(); ?>">
+                    <?php if (has_post_thumbnail()) { ?>
+                        <div class="post-image">
+                            <?php the_post_thumbnail(''); ?>
+                        </div>
+                    <?php } ?>
+                </a>
+                <div class="post-content">
+                    <h3><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
+                    <p><?php echo wp_trim_words(get_the_excerpt()); ?></p>
+          <a class="read-more" href="<?php the_permalink(); ?>">Read More</a> 
+
+<!---  <a class="read-more" href="https://mspinfluencer.com/blogs/?>">Read More</a> ---!>
+                </div>
+            </div>
+            <?php
+        }
+        echo '</div>';
+        wp_reset_postdata();
+    } else {
+        echo '<p>No posts found.</p>';
+    }
+
+    return ob_get_clean();
+}
+add_shortcode('post_grid', 'custom_post_grid_shortcode');
